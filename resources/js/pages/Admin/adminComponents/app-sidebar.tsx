@@ -14,7 +14,7 @@ import {
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/pages/Admin/adminComponents/nav-projects"
-import { NavUser } from "@/components/nav-user"
+import { NavUser } from "@/pages/Admin/adminComponents/nav-user"
 import { TeamSwitcher } from "@/pages/Admin/adminComponents/team-switcher"
 import {
     Sidebar,
