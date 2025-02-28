@@ -5,8 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,6 +16,8 @@ return new class extends Migration
             $table->foreignIdFor(User::class);
             $table->string('name')->nullable();
             $table->string('logo')->nullable();
+            $table->string('hospital_code')->nullable();
+            $table->boolean('verified')->default(false);
             $table->string('address')->nullable();
             $table->timestamps();
         });
