@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\User;
+use App\Models\Hospital;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,12 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('hospitals', function (Blueprint $table) {
+        Schema::create('hospital_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(User::class);
-            $table->string('name')->nullable();
-            $table->string('logo')->nullable();
-            $table->string('address')->nullable();
+            $table->foreignIdFor(Hospital::class);
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('hospitals');
+        Schema::dropIfExists('hospital_documents');
     }
 };

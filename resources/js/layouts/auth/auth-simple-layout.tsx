@@ -1,5 +1,6 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Link } from '@inertiajs/react';
+import React from 'react';
 
 interface AuthLayoutProps {
     children: React.ReactNode;

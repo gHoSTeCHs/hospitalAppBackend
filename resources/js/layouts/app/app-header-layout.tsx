@@ -2,6 +2,7 @@ import { AppContent } from '@/components/app-content';
 import { AppHeader } from '@/components/app-header';
 import { AppShell } from '@/components/app-shell';
 import { type BreadcrumbItem } from '@/types';
+import React from 'react';
 
 interface AppHeaderLayoutProps {
     children: React.ReactNode;

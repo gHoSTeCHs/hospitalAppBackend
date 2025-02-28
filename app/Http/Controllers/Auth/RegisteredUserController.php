@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Hospital;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,14 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        if ($user->email !== 'kingswatter@gmail.com') {
+            $hospital = Hospital::query()->create([
+                'user_id' => $user->id,
+            ]);
+        }
+
+
 
         event(new Registered($user));
 
