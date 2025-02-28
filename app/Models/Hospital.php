@@ -20,7 +20,7 @@ class Hospital extends Model
         parent::boot();
 
         static::creating(function ($code) {
-            $code->account_number = HospitalCodeHelper::generateHospitalCode();
+            $code->hospital_code = HospitalCodeHelper::generateHospitalCode();
         });
     }
 
