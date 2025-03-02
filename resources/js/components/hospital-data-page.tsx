@@ -15,6 +15,7 @@ const TaskManagementInterface = () => {
     const [selectedTasks, setSelectedTasks] = useState<TaskType[]>([]);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
+    // ts-ignore
     const [totalPages, setTotalPages] = useState(1);
     const toggleTaskSelection = (task: TaskType) => {
         if (selectedTasks.some((selectedTask) => selectedTask.id === task.id)) {
@@ -40,7 +41,7 @@ const TaskManagementInterface = () => {
     };
 
     return (
-        <div className="bg-background mx-auto max-w-screen-2xl p-6">
+        <div className="bg-background mx-auto p-6 border rounded-lg">
             {/*Filter*/}
             <div className="mb-4 flex items-center gap-4">
                 <Input placeholder="Filter tasks..." className="max-w-xs" value={filterText} onChange={(e) => setFilterText(e.target.value)} />

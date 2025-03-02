@@ -10,9 +10,11 @@ class HospitalController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $hospitals = Hospital::all();
+
+        return response()->json($hospitals);
     }
 
     /**
