@@ -4,6 +4,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import TaskManagementInterface from '@/components/hospital-data-page';
 import HospitalActivities from '@/components/hospital-activities';
+import HospitalApproval from '@/components/hospital-approval';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -32,7 +33,8 @@ export default function Dashboard() {
                     {/*<PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />*/}
                     <div className='flex flex-col gap-10'>
                         <HospitalActivities />
-                        <TaskManagementInterface />
+                        {/*<TaskManagementInterface />*/}
+                        <HospitalApproval/>
                     </div>
 
                 </div>
