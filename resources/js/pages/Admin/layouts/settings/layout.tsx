@@ -1,40 +1,42 @@
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { type NavItem } from '@/types';
+import React, { ReactNode } from 'react';
 import { Link } from '@inertiajs/react';
-import React from 'react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
-const sidebarNavItems: NavItem[] = [
+interface NavItemProps {
+    title: string;
+    url: string;
+    icon?: string;
+}
+
+const sidebarNavLinks: NavItemProps[] = [
     {
         title: 'Profile',
-        url: '/settings/profile',
-        icon: null,
+        url: '/admin/settings/profile',
     },
     {
         title: 'Password',
-        url: '/settings/password',
-        icon: null,
+        url: '/admin/settings/password',
     },
     {
         title: 'Appearance',
-        url: '/settings/appearance',
-        icon: null,
+        url: '/admin/settings/appearance',
     },
 ];
 
-export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+const AdminSettings = ({ children }: { children: ReactNode }) => {
     const currentPath = window.location.pathname;
 
     return (
         <div className="px-4 py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
+            <Heading title="Settings" description="Manage your profile, and account settings" />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav className="flex flex-col space-y-1 space-x-0">
-                        {sidebarNavItems.map((item) => (
+                        {sidebarNavLinks.map((item) => (
                             <Button
                                 key={item.url}
                                 size="sm"
@@ -44,9 +46,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                                     'bg-muted': currentPath === item.url,
                                 })}
                             >
-                                <Link href={item.url} prefetch>
-                                    {item.title}
-                                </Link>
+                                <Link href={item.url}>{item.title}</Link>
                             </Button>
                         ))}
                     </nav>
@@ -60,4 +60,6 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             </div>
         </div>
     );
-}
+};
+
+export default AdminSettings;

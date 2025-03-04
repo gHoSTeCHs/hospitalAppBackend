@@ -1,4 +1,4 @@
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from 'lucide-react';
+import { BadgeCheck, Bell, ChevronsUpDown, LogOut } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -11,10 +11,10 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
-import { Link, usePage } from '@inertiajs/react';
-import type { SharedData } from '@/types';
 import { useInitials } from '@/hooks/use-initials';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import type { SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 
 export function NavUser() {
     const { auth } = usePage<SharedData>().props;
@@ -59,22 +59,16 @@ export function NavUser() {
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuGroup></DropdownMenuGroup>
+
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <Sparkles />
-                                Upgrade to Pro
+                            <DropdownMenuItem asChild>
+                                <Link className="block w-full" href={route('admin.profile.edit')} as="button" prefetch onClick={cleanup}>
+                                    <BadgeCheck />
+                                    Profile
+                                </Link>
                             </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <BadgeCheck />
-                                Account
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <CreditCard />
-                                Billing
-                            </DropdownMenuItem>
+
                             <DropdownMenuItem>
                                 <Bell />
                                 Notifications
