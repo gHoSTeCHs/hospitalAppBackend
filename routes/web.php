@@ -9,18 +9,26 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard')->middleware('superAdmin');
+    // Admin routes
+    Route::middleware(['admin'])->group(function () {
+        // pages
+        Route::get('admin/dashboard', function () {
+            return Inertia::render('Admin/Dashboard');
+        })->name('admin.dashboard');
 
-    Route::get('admin/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard')->middleware('admin');
+        // data
+    });
 
+    // Super Admin routes
     Route::middleware(['superAdmin'])->group(function () {
+        // pages
+        Route::get('dashboard', function () {
+            return Inertia::render('dashboard');
+        })->name('dashboard');
+        // data
         Route::get('/hospitals', [VerifyHospitalController::class, 'index'])->name('hospitals');
     });
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
