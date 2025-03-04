@@ -3,17 +3,13 @@ import axios from 'axios';
 // Base URL for API endpoints
 const API_URL = 'http://localhost:8080/';
 
-// Configure axios defaults
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.defaults.withCredentials = true;
 
-// Task priority types
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
-// Task status types
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
 
-// Task interface
 export interface Task {
     id: number;
     title: string;
@@ -167,7 +163,7 @@ export const taskService = {
         try {
             const response = await axios.post(`${API_URL}/tasks/bulk-update`, {
                 task_ids: taskIds,
-                ...updateData
+                ...updateData,
             });
             return response.data;
         } catch (error) {
@@ -185,7 +181,7 @@ export const taskService = {
             console.error('Error fetching task statistics', error);
             throw error;
         }
-    }
+    },
 };
 
 export default taskService;

@@ -46,3 +46,16 @@ export interface TaskType{
     status: string
     priority: string
 }
+
+export interface HospitalApprovalProp {
+    id: number | string;
+    name: string;
+    users: number;
+    status: string;
+    lastActivity: string;
+    documentsStatus: string;
+    documentsUploaded: boolean;
+    location: string;
+    joinDate: string;
+}
+

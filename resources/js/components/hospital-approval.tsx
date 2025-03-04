@@ -13,92 +13,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useState } from 'react';
-
-interface HospitalApprovalProp{
-    id: number | string;
-    name: string;
-    users: number;
-    status: string;
-    lastActivity: string;
-    documentsStatus: string;
-    documentsUploaded: boolean;
-    location: string;
-    joinDate: string;
-}
+import { VerifyHospitalService } from '@/services/hos-approval';
+import { useEffect, useState } from 'react';
+import { hospitals } from '@/constants/data';
+import { HospitalApprovalProp } from '@/types';
 
 const HospitalApproval = () => {
     const [showDialog, setShowDialog] = useState(false);
     const [selectedHospital, setSelectedHospital] = useState<HospitalApprovalProp>();
-
-    const hospitals: HospitalApprovalProp[] = [
-        {
-            id: 1,
-            name: 'General Hospital',
-            users: 247,
-            status: 'active',
-            lastActivity: 'Today',
-            documentsStatus: 'approved',
-            documentsUploaded: true,
-            location: 'San Francisco, CA',
-            joinDate: 'Jan 15, 2025',
-        },
-        {
-            id: 2,
-            name: 'Memorial Health System',
-            users: 195,
-            status: 'active',
-            lastActivity: 'Today',
-            documentsStatus: 'approved',
-            documentsUploaded: true,
-            location: 'Chicago, IL',
-            joinDate: 'Feb 28, 2025',
-        },
-        {
-            id: 3,
-            name: 'University Medical Center',
-            users: 412,
-            status: 'active',
-            lastActivity: 'Yesterday',
-            documentsStatus: 'pending',
-            documentsUploaded: true,
-            location: 'Boston, MA',
-            joinDate: 'Dec 10, 2024',
-        },
-        {
-            id: 4,
-            name: "St. Mary's Hospital",
-            users: 178,
-            status: 'pending',
-            lastActivity: '2 days ago',
-            documentsStatus: 'pending',
-            documentsUploaded: true,
-            location: 'Austin, TX',
-            joinDate: 'Feb 25, 2025',
-        },
-        {
-            id: 5,
-            name: 'Oceanview Medical Group',
-            users: 97,
-            status: 'pending',
-            lastActivity: '3 days ago',
-            documentsStatus: 'rejected',
-            documentsUploaded: true,
-            location: 'San Diego, CA',
-            joinDate: 'Feb 20, 2025',
-        },
-        {
-            id: 6,
-            name: 'Riverdale Healthcare',
-            users: 0,
-            status: 'pending',
-            lastActivity: 'N/A',
-            documentsStatus: 'missing',
-            documentsUploaded: false,
-            location: 'Denver, CO',
-            joinDate: 'Mar 1, 2025',
-        },
-    ];
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -148,10 +70,23 @@ const HospitalApproval = () => {
         }
     };
 
-    const viewDocuments = (hospital:HospitalApprovalProp) => {
+    const viewDocuments = (hospital: HospitalApprovalProp) => {
         setSelectedHospital(hospital);
         setShowDialog(true);
     };
+
+    useEffect(() => {
+        const fetchHospitals = async () => {
+            try {
+                const data = await VerifyHospitalService.getHospitals();
+                console.log(data);
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        fetchHospitals();
+    }, []);
     return (
         <>
             <Card className="w-full">

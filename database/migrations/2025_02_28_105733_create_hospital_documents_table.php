@@ -15,6 +15,9 @@ return new class extends Migration
         Schema::create('hospital_documents', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Hospital::class);
+            $table->string('document_title');
+            $table->enum('document_type', ['approved', 'rejected', 'pending'])->default('pending');
+            $table->string('path')->nullable();
             $table->timestamps();
         });
     }

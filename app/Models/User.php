@@ -5,7 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -16,7 +16,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +27,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
     ];
 
     /**
@@ -54,7 +54,9 @@ class User extends Authenticatable
     }
 
     const ROLE_SUPERADMIN = 'superAdmin';
+
     const ROLE_ADMIN = 'admin';
+
     const ROLE_USER = 'user';
 
     public function isSuperAdmin(): bool
@@ -67,8 +69,8 @@ class User extends Authenticatable
         return $this->role == self::ROLE_ADMIN;
     }
 
-    public function hospital(): HasOne
+    public function hospital(): BelongsTo
     {
-        return $this->hasOne(Hospital::class);
+        return $this->belongsTo(Hospital::class);
     }
 }
