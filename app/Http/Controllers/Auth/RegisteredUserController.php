@@ -32,7 +32,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
+            'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -43,7 +43,7 @@ class RegisteredUserController extends Controller
             'role' => 'admin',
         ]);
 
-        $documentTitles = ['document1', 'document2'];
+        $documentTitles = ['Corporate Affairs Commission', 'Operation Permit'];
 
         if ($user->email !== 'kingswatter@gmail.com') {
             $hospital = Hospital::query()->create([

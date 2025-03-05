@@ -7,10 +7,11 @@ use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class Settings extends Controller
 {
-    public function profile(Request $request)
+    public function profile(Request $request): Response
     {
         return Inertia::render('Admin/pages/settings/profile', []);
     }

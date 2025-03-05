@@ -10,6 +10,7 @@ import { SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
+import UpdateHospitalDetails from '@/pages/Admin/adminComponents/updateHospitalDetails';
 
 const AdminProfile = ({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) => {
     const { auth } = usePage<SharedData>().props;
@@ -105,6 +106,8 @@ const AdminProfile = ({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; s
                                 </Transition>
                             </div>
                         </form>
+
+                        <UpdateHospitalDetails/>
                     </div>
                 </AdminSettings>
             </SidebarInset>
