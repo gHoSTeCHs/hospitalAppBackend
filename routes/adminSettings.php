@@ -7,7 +7,7 @@ Route::prefix('admin')->middleware(['auth', 'admin', 'verified'])->group(functio
     Route::get('/settings/profile', [Settings::class, 'profile'])->name('admin.profile.edit');
     Route::patch('/settings/profile', [Settings::class, 'profileUpdate'])->name('admin.profile.update');
 
-    Route::get('/settings/password', [Settings::class, 'profile'])->name('admin.password.edit');
+    Route::get('/settings/documents', [Settings::class, 'documents'])->name('admin.documents');
 
     Route::get('/settings/appearance', [Settings::class, 'profile'])->name('admin.appearance');
 });

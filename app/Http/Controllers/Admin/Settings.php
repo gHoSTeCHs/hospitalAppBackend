@@ -28,4 +28,9 @@ class Settings extends Controller
 
         return to_route('admin.profile.update');
     }
+
+    public function documents(Request $request): Response
+    {
+        return Inertia::render('Admin/pages/settings/documents', []);
+    }
 }

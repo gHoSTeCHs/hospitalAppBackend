@@ -4,13 +4,25 @@ namespace App\Http\Controllers\Api\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hospital;
+use App\Models\HospitalDocument;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class HospitalDetailsApiController extends Controller
 {
+    private function generateUniqueFileName($file, $hospitalId): string
+    {
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+        $timestamp = now()->format('YmdHis');
+
+        return "{$originalName}_{$hospitalId}_{$timestamp}.{$extension}";
+    }
+
     public function index($id): JsonResponse
     {
         $hospitalDetails = Hospital::query()->where('user_id', $id)->get();
@@ -24,11 +36,9 @@ class HospitalDetailsApiController extends Controller
     {
         $hospital = Hospital::query()->findOrFail($id);
 
-        // Prepare validation rules dynamically
         $rules = [];
         $updateData = [];
 
-        // Dynamically add validation and update rules based on input
         if ($request->has('hospitalName')) {
             $rules['hospitalName'] = 'sometimes|string|max:255';
             $updateData['name'] = $request->input('hospitalName');
@@ -43,7 +53,6 @@ class HospitalDetailsApiController extends Controller
             $rules['hospitalLogo'] = 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048';
         }
 
-        // Validate only the provided fields
         $validatedData = $request->validate($rules);
 
         // Update provided fields
@@ -62,7 +71,6 @@ class HospitalDetailsApiController extends Controller
             $hospital->logo = $logoPath;
         }
 
-        // Only save if something has changed
         if ($hospital->isDirty()) {
             $hospital->save();
 
@@ -71,5 +79,54 @@ class HospitalDetailsApiController extends Controller
 
         return back()->with('info', 'No changes were made.');
 
+    }
+
+    public function getDocumentStatus($id): JsonResponse
+    {
+        $user = User::query()->findOrFail($id);
+        $hospital = Hospital::query()->findOrFail($user->hospital_id);
+        $documents = HospitalDocument::query()->where('hospital_id', $hospital->id)->get();
+
+        return response()->json([
+            $documents,
+        ]);
+    }
+
+    public function uploadDocuments(Request $request, $id): RedirectResponse
+    {
+        try {
+            $validatedData = $request->validate([
+                'corporate_affairs_commission' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            ]);
+
+            $hospital = Hospital::query()->where('user_id', $id)->firstOrFail();
+
+            if (! $hospital) {
+                throw ValidationException::withMessages([
+                    'hospital' => ['No associated hospital found'],
+                ]);
+            }
+
+            if ($request->hasFile('corporate_affairs_commission')) {
+                $file = $request->file('corporate_affairs_commission');
+
+                $document = HospitalDocument::query()->where('hospital_id', $hospital->id)->where('document_title', 'Corporate Affairs Commission')->first();
+
+                if ($document->path == null) {
+                    $fileName = $this->generateUniqueFileName($file, $hospital->id);
+                    $path = $file->storeAs('hospital-documents', $fileName, 'public');
+                    $document->update([
+                        'path' => $path,
+                    ]);
+                }
+
+            }
+
+            return back()->with('success', 'Document uploaded successfully');
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Document upload failed: '.$e->getMessage());
+        }
     }
 }

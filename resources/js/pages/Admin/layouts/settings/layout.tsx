@@ -17,8 +17,8 @@ const sidebarNavLinks: NavItemProps[] = [
         url: '/admin/settings/profile',
     },
     {
-        title: 'Password',
-        url: '/admin/settings/password',
+        title: 'Documents',
+        url: '/admin/settings/documents',
     },
     {
         title: 'Appearance',

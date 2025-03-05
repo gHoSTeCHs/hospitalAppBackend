@@ -20,6 +20,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // data
         Route::get('admin/hospitals/{id}', [HospitalDetailsApiController::class, 'index'])->name('admin.hospitals');
         Route::patch('admin/hospitals/{id}', [HospitalDetailsApiController::class, 'upDateHospitalDetails'])->name('admin.hospital.update');
+
+        Route::get('admin/hospitals/documents/{id}', [HospitalDetailsApiController::class, 'getDocumentStatus'])->name('admin.hospital.documents');
+        Route::post('admin/hospitals/documents/{id}', [HospitalDetailsApiController::class, 'uploadDocuments'])->name('admin.hospital.documents.upload');
     });
 
     // Super Admin routes
@@ -33,8 +36,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
 
 // admin specific routes
-require __DIR__.'/adminSettings.php';
+require __DIR__ . '/adminSettings.php';
