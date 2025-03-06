@@ -16,8 +16,7 @@ class VerifyHospitalController extends Controller
         $hospitals = Hospital::query()->with(['users', 'documents'])->withCount('users')->get();
 
         return response()->json([
-            'success' => true,
-            'hospitals' => $hospitals,
+            $hospitals
         ]);
     }
 

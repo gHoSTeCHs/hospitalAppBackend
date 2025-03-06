@@ -26,7 +26,7 @@ const Documents = () => {
     const [documentVerificationStatus, setDocumentVerificationStatus] = useState<string[]>([]);
 
     const { setData, post, errors } = useForm({
-        corporate_affairs: null as File | null,
+        corporate_affairs: null as File | null ,
     });
 
     useEffect(() => {

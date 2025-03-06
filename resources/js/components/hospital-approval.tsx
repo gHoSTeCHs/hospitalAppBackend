@@ -1,26 +1,53 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { VerifyHospitalService } from '@/services/hos-approval';
+import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { useEffect, useState } from 'react';
-import { hospitals } from '@/constants/data';
-import { HospitalApprovalProp } from '@/types';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from './ui/dropdown-menu';
+
+interface Document {
+    id: number;
+    hospital_id: number;
+    document_title: string;
+    document_type: string;
+    path: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    email_verified_at: string | null;
+    hospital_id: string;
+    role: string;
+    created_at: string;
+    updated_at: string;
+}
+
+interface Hospital {
+    id: number;
+    name: string | null;
+    hospital_code: string;
+    user_id: number;
+    address: string;
+    logo: string | null;
+    created_at: string;
+    updated_at: string;
+    verified: boolean;
+    users_count: number;
+    documents: Document[];
+    users: User[];
+}
 
 const HospitalApproval = () => {
     const [showDialog, setShowDialog] = useState(false);
-    const [selectedHospital, setSelectedHospital] = useState<HospitalApprovalProp>();
+    const [selectedHospital, setSelectedHospital] = useState<Hospital>();
+    const [hospitalData, setHospitalData] = useState<Hospital[]>([]);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -70,7 +97,22 @@ const HospitalApproval = () => {
         }
     };
 
-    const viewDocuments = (hospital: HospitalApprovalProp) => {
+    const getVerificationStatusBadge = (status: boolean) => {
+        switch (status) {
+            case true:
+                return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Approved</Badge>;
+            case false:
+                return (
+                    <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-600">
+                        Under Review
+                    </Badge>
+                );
+            default:
+                return <Badge variant="outline">{status}</Badge>;
+        }
+    };
+
+    const viewDocuments = (hospital: Hospital) => {
         setSelectedHospital(hospital);
         setShowDialog(true);
     };
@@ -79,14 +121,22 @@ const HospitalApproval = () => {
         const fetchHospitals = async () => {
             try {
                 const data = await VerifyHospitalService.getHospitals();
-                console.log(data);
+                const parsedData = data[0];
+                setHospitalData(parsedData);
             } catch (e) {
                 console.error(e);
             }
         };
 
-        fetchHospitals();
+        fetchHospitals().then();
     }, []);
+
+    useEffect(() => {
+        if (hospitalData) {
+            console.log(hospitalData);
+        }
+    }, [hospitalData]);
+
     return (
         <>
             <Card className="w-full">
@@ -122,33 +172,17 @@ const HospitalApproval = () => {
                             <TableRow>
                                 <TableHead>Hospital Name</TableHead>
                                 <TableHead>Users</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Documents</TableHead>
-                                <TableHead>Last Activity</TableHead>
+                                <TableHead>Verification Status</TableHead>
                                 <TableHead>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
-                        <TableBody>
-                            {hospitals.map((hospital) => (
+
+                        {hospitalData?.map((hospital) => {
+                            return (
                                 <TableRow key={hospital.id}>
                                     <TableCell className="font-medium">{hospital.name}</TableCell>
-                                    <TableCell>{hospital.users.toLocaleString()}</TableCell>
-                                    <TableCell>{getStatusBadge(hospital.status)}</TableCell>
-                                    <TableCell>
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger>{getDocumentStatusBadge(hospital.documentsStatus)}</TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>
-                                                        {hospital.documentsUploaded
-                                                            ? `Documents ${hospital.documentsStatus}`
-                                                            : 'Documents not yet uploaded'}
-                                                    </p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </TableCell>
-                                    <TableCell>{hospital.lastActivity}</TableCell>
+                                    <TableCell>{hospital.users_count.toLocaleString()}</TableCell>
+                                    <TableCell>{getVerificationStatusBadge(hospital.verified)}</TableCell>
                                     <TableCell>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -173,7 +207,7 @@ const HospitalApproval = () => {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => viewDocuments(hospital)} disabled={!hospital.documentsUploaded}>
+                                                <DropdownMenuItem onClick={() => viewDocuments(hospital)}>
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
                                                         width="16"
@@ -191,89 +225,12 @@ const HospitalApproval = () => {
                                                     </svg>
                                                     View Documents
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem>
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="mr-2"
-                                                    >
-                                                        <path d="M12 20h9"></path>
-                                                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                                                    </svg>
-                                                    Edit Details
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                {hospital.status === 'pending' && hospital.documentsStatus === 'approved' && (
-                                                    <DropdownMenuItem>
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            className="mr-2 text-green-600"
-                                                        >
-                                                            <path d="M20 6 9 17l-5-5"></path>
-                                                        </svg>
-                                                        Approve Hospital
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {hospital.status === 'active' && (
-                                                    <DropdownMenuItem>
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            className="mr-2 text-amber-600"
-                                                        >
-                                                            <path d="M18 6 6 18"></path>
-                                                            <path d="m6 6 12 12"></path>
-                                                        </svg>
-                                                        Deactivate
-                                                    </DropdownMenuItem>
-                                                )}
-                                                <DropdownMenuItem className="text-red-600">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        className="mr-2"
-                                                    >
-                                                        <path d="M3 6h18"></path>
-                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                                    </svg>
-                                                    Remove
-                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
+                            );
+                        })}
                     </Table>
                 </CardContent>
                 <CardFooter className="flex justify-between border-t pt-6">
@@ -297,219 +254,63 @@ const HospitalApproval = () => {
                         <DialogTitle>Hospital Documents</DialogTitle>
                         <DialogDescription>{selectedHospital && `Reviewing documents for ${selectedHospital.name}`}</DialogDescription>
                     </DialogHeader>
-
                     {selectedHospital && (
                         <>
                             <div className="my-2 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <p className="text-sm font-medium text-gray-500">Hospital Name</p>
-                                        <p>{selectedHospital.name}</p>
+                                        {selectedHospital.name == null ? <p>No Name provided</p> : <p>{selectedHospital.name}</p>}
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-sm font-medium text-gray-500">Location</p>
-                                        <p>{selectedHospital.location}</p>
+                                        {selectedHospital.address == null ? <p>No address provided</p> : <p>{selectedHospital.address}</p>}
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium text-gray-500">Join Date</p>
-                                        <p>{selectedHospital.joinDate}</p>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-sm font-medium text-gray-500">Document Status</p>
-                                        <p>{getDocumentStatusBadge(selectedHospital.documentsStatus)}</p>
-                                    </div>
+                                    {/*<div className="space-y-1">*/}
+                                    {/*    <p className="text-sm font-medium text-gray-500">Join Date</p>*/}
+                                    {/*    <p>{selectedHospital.joinDate}</p>*/}
+                                    {/*</div>*/}
+                                    {/*<div className="space-y-1">*/}
+                                    {/*    <p className="text-sm font-medium text-gray-500">Document Status</p>*/}
+                                    {/*    <p>{getDocumentStatusBadge(selectedHospital.documentsStatus)}</p>*/}
+                                    {/*</div>*/}
                                 </div>
-
                                 <div className="space-y-4 rounded-md border p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h4 className="font-medium">Hospital License</h4>
-                                            <p className="text-sm text-gray-500">Official operating license</p>
-                                        </div>
-                                        <div>
-                                            <Button variant="outline" size="sm">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="mr-2"
-                                                >
-                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                                </svg>
-                                                Download
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    {selectedHospital.documents.map((document, id: number) => {
+                                        let finalPath;
+                                        finalPath = `${window.location.origin}/storage/${document.path}`;
+                                        return (
+                                            <div className="flex items-center justify-between" key={id}>
+                                                <div>
+                                                    <h4 className="font-medium">{document.document_title}</h4>
+                                                    <p className="text-sm text-gray-500">Official operating license</p>
+                                                </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h4 className="font-medium">Insurance Documentation</h4>
-                                            <p className="text-sm text-gray-500">Liability coverage documents</p>
-                                        </div>
-                                        <div>
-                                            <Button variant="outline" size="sm">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="mr-2"
-                                                >
-                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                                </svg>
-                                                Download
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h4 className="font-medium">Administrative Contacts</h4>
-                                            <p className="text-sm text-gray-500">List of key staff members</p>
-                                        </div>
-                                        <div>
-                                            <Button variant="outline" size="sm">
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="16"
-                                                    height="16"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    className="mr-2"
-                                                >
-                                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                                    <polyline points="7 10 12 15 17 10"></polyline>
-                                                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                                                </svg>
-                                                Download
-                                            </Button>
-                                        </div>
-                                    </div>
+                                                <div>
+                                                    {document.path == null ? (
+                                                        <>
+                                                            <p>No document available</p>
+                                                        </>
+                                                    ) : (
+                                                        <img alt="Document image" src={finalPath} className="h-10 w-10 rounded-lg" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    {document.document_type == 'pending' ? (
+                                                        <>
+                                                            <Button>Approve</Button>
+                                                        </>
+                                                    ) : (
+                                                        <>Approved</>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-
-                                {selectedHospital.documentsStatus === 'pending' && (
-                                    <Alert>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="h-4 w-4"
-                                        >
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <line x1="12" y1="8" x2="12" y2="12"></line>
-                                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                                        </svg>
-                                        <AlertTitle>Documents Under Review</AlertTitle>
-                                        <AlertDescription>These documents are currently being reviewed by the compliance team.</AlertDescription>
-                                    </Alert>
-                                )}
                             </div>
 
-                            <DialogFooter className="flex justify-between">
-                                {selectedHospital.documentsStatus === 'pending' && (
-                                    <>
-                                        <Button variant="destructive">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="mr-2"
-                                            >
-                                                <path d="M18 6 6 18"></path>
-                                                <path d="m6 6 12 12"></path>
-                                            </svg>
-                                            Reject Documents
-                                        </Button>
-                                        <Button>
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="mr-2"
-                                            >
-                                                <path d="M20 6 9 17l-5-5"></path>
-                                            </svg>
-                                            Approve Documents
-                                        </Button>
-                                    </>
-                                )}
-                                {selectedHospital.documentsStatus === 'approved' && selectedHospital.status === 'pending' && (
-                                    <Button>
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="mr-2"
-                                        >
-                                            <path d="M20 6 9 17l-5-5"></path>
-                                        </svg>
-                                        Approve Hospital
-                                    </Button>
-                                )}
-                                {selectedHospital.documentsStatus === 'rejected' && (
-                                    <Button variant="outline">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="16"
-                                            height="16"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="mr-2"
-                                        >
-                                            <path d="m3 2 18 24"></path>
-                                            <path d="M3 22m1-12H2"></path>
-                                        </svg>
-                                        Request New Documents
-                                    </Button>
-                                )}
-                            </DialogFooter>
+                            {selectedHospital.verified ? <>Hospital is verified</> : <>Hospital is not verified</>}
                         </>
                     )}
                 </DialogContent>
