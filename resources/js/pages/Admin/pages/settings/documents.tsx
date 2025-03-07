@@ -60,6 +60,7 @@ const Documents = () => {
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, documentTitle: string) => {
         const file = e.target.files?.[0];
         if (file) {
+            // ts-ignore
             setData(documentTitle.toLowerCase().replace(/\s+/g, '_'), file);
         }
     };

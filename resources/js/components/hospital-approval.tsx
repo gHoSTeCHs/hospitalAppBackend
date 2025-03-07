@@ -296,12 +296,21 @@ const HospitalApproval = () => {
                                                     )}
                                                 </div>
                                                 <div>
-                                                    {document.document_type == 'pending' ? (
-                                                        <>
-                                                            <Button>Approve</Button>
-                                                        </>
+                                                    {document?.document_type === 'pending' && document?.path ? (
+                                                        <div className='flex gap-1'>
+                                                            <Button size="sm" className="text-xs">
+                                                                Approve
+                                                            </Button>
+                                                            <Button variant='destructive' size="sm" className="text-xs">
+                                                                Reject
+                                                            </Button>
+                                                        </div>
+                                                    ) : document?.document_type === 'rejected' ? (
+                                                        <Button variant="destructive" disabled={true}>Rejected</Button>
+                                                    ) : document?.document_type === 'approved' ? (
+                                                        <p className="text-xs">Approved</p>
                                                     ) : (
-                                                        <>Approved</>
+                                                        <>Unknown Status</>
                                                     )}
                                                 </div>
                                             </div>

@@ -20,7 +20,7 @@ class HospitalDetailsApiController extends Controller
         $extension = $file->getClientOriginalExtension();
         $timestamp = now()->format('YmdHis');
 
-        return "{$originalName}_{$hospitalId}_{$timestamp}.{$extension}";
+        return "{$originalName}_{$hospitalId}_$timestamp.$extension";
     }
 
     public function index($id): JsonResponse

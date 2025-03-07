@@ -39,4 +39,9 @@ class Hospital extends Model
     {
         return $this->hasMany(HospitalDocument::class);
     }
+
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
+    }
 }

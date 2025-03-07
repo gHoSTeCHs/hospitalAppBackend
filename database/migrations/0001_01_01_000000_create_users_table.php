@@ -16,10 +16,14 @@ return new class extends Migration
 
             $table->string('name');
             $table->string('email')->unique();
-            $table->enum('role', ['admin', 'user', 'superAdmin'])->default('user');
-            $table->string('hospital_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
+            $table->enum('role', ['admin', 'user', 'superAdmin'])->default('user');
             $table->string('password');
+            $table->string('hospital_id')->nullable();
+            $table->string('profile_picture')->nullable();
+            $table->boolean('is_online')->default(false);
+            $table->timestamp('last_active')->nullable();
+            $table->string('device_token')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
