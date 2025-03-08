@@ -29,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'hospital_id',
         'role',
         'profile_picture',
         'is_online',
