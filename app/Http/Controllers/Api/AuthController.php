@@ -61,7 +61,7 @@ class AuthController extends Controller
                     'message' => 'Registration successful',
                 ], Response::HTTP_CREATED);
             });
-t
+
         } catch (Exception $e) {
             Log::error('Registration Failed', [
                 'error' => $e->getMessage(),

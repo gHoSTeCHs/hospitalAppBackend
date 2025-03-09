@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\ConversationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,5 +16,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-});
 
+    // Users
+    Route::get('/users/{id}', [UserController::class, 'index']);
+
+    // Conversation Api
+    Route::get('/conversations', [ConversationController::class, 'index']);
+    Route::post('/conversations/create', [ConversationController::class, 'store']);
+});
