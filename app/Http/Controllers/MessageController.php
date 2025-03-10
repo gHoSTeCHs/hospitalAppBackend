@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 // use Illuminate\Support\Facades\Storage;
@@ -81,10 +82,17 @@ class MessageController extends Controller
         $validator = Validator::make(array_merge($request->all(), ['conversation_id' => $conversationId]), [
             'conversation_id' => 'required|exists:conversations,id',
             'message_type' => 'required|in:text,image,audio,video,file,location',
-            'content' => 'required_if:message_type,text,location',
+            'content' => [
+                'required_if:message_type,text,location',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->message_type === 'text' && mb_strlen($value) > 5000) {
+                        $fail('The message content cannot exceed 5000 characters.');
+                    }
+                },
+            ],
             'is_alert' => 'boolean',
             'is_emergency' => 'boolean',
-            'file' => 'required_if:message_type,image,audio,video,file|file|max:100000',
+            'file' => 'nullable|required_if:message_type,image,audio,video,file|file|max:100000',
         ]);
 
         if ($validator->fails()) {
@@ -92,8 +100,6 @@ class MessageController extends Controller
         }
 
         $user = $request->user();
-
-        // Verify user is part of the conversation
         $conversation = Conversation::query()->where('id', $conversationId)
             ->whereHas('participants', function ($query) use ($user) {
                 $query->where('users.id', $user->id);
@@ -103,16 +109,31 @@ class MessageController extends Controller
         DB::beginTransaction();
 
         try {
+
             $message = Message::query()->create([
                 'conversation_id' => $conversationId,
                 'sender_id' => $user->id,
                 'message_type' => $request->message_type,
-                'content' => $request->content ?? null,
+                'content' => $request->input('content'), // Ensure it's properly retrieved
                 'is_alert' => $request->is_alert ?? false,
                 'is_emergency' => $request->is_emergency ?? false,
             ]);
 
-            // Handle file upload
+            $conversation->touch();
+
+            $participantIds = $conversation->participants()
+                ->where('users.id', '!=', $user->id)
+                ->pluck('users.id'); // Ensure no alias issue
+
+            foreach ($participantIds as $participantId) {
+                MessageStatus::query()->create([
+                    'message_id' => $message->id,
+                    'user_id' => $participantId,
+                    'status' => 'delivered',
+                ]);
+            }
+
+            // Handle file upload if present
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $path = $file->store('conversation_files', 'public');
@@ -126,40 +147,21 @@ class MessageController extends Controller
                 ]);
             }
 
-            // Update conversation timestamp
-            $conversation->touch();
-
-            // Create message status records for all participants except sender
-            $participantIds = $conversation->participants()
-                ->where('users.id', '!=', $user->id)
-                ->pluck('users.id');
-
-            foreach ($participantIds as $participantId) {
-                MessageStatus::query()->create([
-                    'message_id' => $message->id,
-                    'user_id' => $participantId,
-                    'status' => 'delivered',
-                ]);
-            }
-
-            // Load relationships for response
             $message->load(['sender', 'files', 'status']);
 
             DB::commit();
-
-            // Broadcast the new message event to all participants
-            // You could add real-time notification here using Laravel's broadcast features
-            // broadcast(new NewMessageEvent($message))->toOthers();
 
             return response()->json([
                 'message' => $message,
                 'status' => 'Message sent successfully',
             ], 201);
         } catch (Exception $e) {
-            DB::rollback();
+            DB::rollBack();
+
+            Log::error('Message creation failed', ['error' => $e->getMessage()]);
 
             return response()->json([
-                'error' => 'Failed to send message: '.$e->getMessage(),
+                'error' => 'Failed to send message',
             ], 500);
         }
     }

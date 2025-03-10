@@ -26,5 +26,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/conversations/create', [ConversationController::class, 'store']);
 
     // Messages
-    Route::post('/messages/{id}', [MessageController::class, 'index']);
+    Route::get('/messages/{id}', [MessageController::class, 'index']);
+    Route::post('/messages/{id}', [MessageController::class, 'store']);
 });

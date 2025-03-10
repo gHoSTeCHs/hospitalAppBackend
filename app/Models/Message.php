@@ -23,6 +23,7 @@ class Message extends Model
     ];
 
     protected $casts = [
+        'content' => 'string',
         'is_alert' => 'boolean',
         'is_emergency' => 'boolean',
         'read_at' => 'datetime',
