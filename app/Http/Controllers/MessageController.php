@@ -159,7 +159,7 @@ class MessageController extends Controller
             DB::rollback();
 
             return response()->json([
-                'error' => 'Failed to send message: ' . $e->getMessage(),
+                'error' => 'Failed to send message: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -167,9 +167,32 @@ class MessageController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Message $message)
+    public function show(Request $request, $conversationId, $messageId): JsonResponse
     {
-        //
+        $user = $request->user();
+
+        // Verify user is part of the conversation
+        $conversation = Conversation::query()->where('id', $conversationId)
+            ->whereHas('participants', function ($query) use ($user) {
+                $query->where('users.id', $user->id);
+            })
+            ->firstOrFail();
+
+        $message = Message::query()->where('id', $messageId)
+            ->where('conversation_id', $conversationId)
+            ->with(['sender', 'files', 'status'])
+            ->firstOrFail();
+
+        // Mark message as read if not sender
+        if ($message->sender_id !== $user->id && $message->read_at === null) {
+            $message->read_at = now();
+            $message->save();
+
+            // Broadcast message read event
+            //            broadcast(new MessageReadEvent($message, $user))->toOthers();
+        }
+
+        return response()->json(['message' => $message]);
     }
 
     /**
