@@ -14,6 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="SuperAdmin Dashboard" />
@@ -32,6 +33,7 @@ export default function Dashboard() {
                 <div className="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min">
                     {/*<PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />*/}
                     <div className="flex flex-col gap-10">
+                        {/**/}
                         <HospitalActivities />
                         {/*<TaskManagementInterface />*/}
                         <HospitalApproval />
