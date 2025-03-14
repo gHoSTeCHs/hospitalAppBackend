@@ -28,4 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Messages
     Route::get('/messages/{id}', [MessageController::class, 'index']);
     Route::post('/messages/{id}', [MessageController::class, 'store']);
+
+    // Test-file upload
+    Route::post('/converse/{id}', [MessageController::class, 'testFileUpload']);
 });
