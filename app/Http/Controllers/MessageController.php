@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Events\MessageSent;
 
 // use Illuminate\Support\Facades\Storage;
 
@@ -150,6 +151,7 @@ class MessageController extends Controller
             $message->load(['sender', 'files', 'status']);
 
             DB::commit();
+            broadcast(new MessageSent($message))->toOthers();
 
             return response()->json([
                 'message' => $message,
