@@ -221,35 +221,4 @@ class MessageController extends Controller
         //
     }
 
-    public function testFileUpload(Request $request, $conversationId): JsonResponse
-    {
-        $validator = Validator::make(array_merge($request->all(), ['conversation_id' => $conversationId]), [
-            'conversation_id' => 'required|exists:conversations,id',
-            'message_type' => 'required|in:text,image,audio,video,file,location',
-            'file' => 'nullable|required_if:message_type,image,audio,video,file|file|max:100000',
-        ]);
-
-        if ($validator->fails()) {
-            Log::error('Message creation failed', ['error' => $validator->errors()]);
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('conversation_files', 'public');
-
-            File::query()->create([
-                'message_id' => 25,
-                'file_name' => $file->getClientOriginalName(),
-                'file_path' => $path,
-                'file_type' => $file->getMimeType(),
-                'file_size' => $file->getSize(),
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'file uploaded',
-            'status' => 'Message sent successfully',
-        ], 201);
-    }
 }

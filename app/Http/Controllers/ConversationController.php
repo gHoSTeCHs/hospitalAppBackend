@@ -117,7 +117,7 @@ class ConversationController extends Controller
         } catch (Exception $e) {
             DB::rollback();
 
-            return response()->json(['error' => 'Failed to create conversation: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Failed to create conversation: '.$e->getMessage()], 500);
         }
     }
 
