@@ -4,74 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Events\CallEvent;
 use App\Models\Conversation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class CallController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function initiateCall(Request $request, $conversationId): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Call $call)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Call $call)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Call $call)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Call $call)
-    {
-        //
-    }
-
-    public function initiateCall(Request $request, $conversationId)
-    {
-        $conversation = Conversation::findOrFail($conversationId);
+        $conversation = Conversation::query()->findOrFail($conversationId);
         $user = Auth::user();
 
-        // Verify user is part of the conversation
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -94,7 +38,7 @@ class CallController extends Controller
         $user = Auth::user();
 
         // Verify user is part of the conversation
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -110,13 +54,13 @@ class CallController extends Controller
         return response()->json(['message' => 'Call accepted']);
     }
 
-    public function rejectCall(Request $request, $conversationId)
+    public function rejectCall(Request $request, $conversationId): JsonResponse
     {
-        $conversation = Conversation::findOrFail($conversationId);
+        $conversation = Conversation::query()->findOrFail($conversationId);
         $user = Auth::user();
 
         // Verify user is part of the conversation
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -132,13 +76,13 @@ class CallController extends Controller
         return response()->json(['message' => 'Call rejected']);
     }
 
-    public function endCall(Request $request, $conversationId)
+    public function endCall(Request $request, $conversationId): JsonResponse
     {
-        $conversation = Conversation::findOrFail($conversationId);
+        $conversation = Conversation::query()->findOrFail($conversationId);
         $user = Auth::user();
 
         // Verify user is part of the conversation
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

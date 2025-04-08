@@ -22,16 +22,18 @@ class AuthController extends Controller
         try {
             $validatedData = $request->validated();
 
-            $hospital = Hospital::query()->where('hospital_code', $validatedData['hospital_code'])->first();
+            $hospital = Hospital::query()->where('hospital_code', $validatedData['hospital_code'])
+                ->where('verified', true)
+                ->first();
+
             if (! $hospital) {
-                Log::warning('Registration attempt with invalid hospital code', [
+                Log::warning('Registration attempt with invalid/unverified hospital code', [
                     'hospital_code' => $validatedData['hospital_code'],
-                    'email' => $validatedData['email'],
                 ]);
 
                 return response()->json([
-                    'message' => 'Please enter a valid hospital code',
-                    'errors' => ['hospital_code' => ['Invalid hospital code provided']],
+                    'message' => 'Please enter a valid and verified hospital code',
+                    'errors' => ['hospital_code' => ['Invalid or unverified hospital code provided']],
                 ], Response::HTTP_BAD_REQUEST);
             }
 
@@ -44,16 +46,13 @@ class AuthController extends Controller
                     'hospital_id' => $hospital->id,
                 ]);
 
-                // Generate token
-                $token = $user->createToken('auth_token')->plainTextToken;
+                $tokenResult = $user->createToken('auth_token');
+                $token = $tokenResult->plainTextToken;
 
-                // Send welcome email
-                //                $this->sendWelcomeEmail($user);
+                // event(new Registered($user));
 
-                // Log successful registration
                 Log::info('User registered successfully', ['user_id' => $user->id]);
 
-                // Return user data (excluding sensitive information) and token
                 return response()->json([
                     'user' => $user->makeHidden(['password']),
                     'token' => $token,
@@ -61,11 +60,10 @@ class AuthController extends Controller
                     'message' => 'Registration successful',
                 ], Response::HTTP_CREATED);
             });
-
         } catch (Exception $e) {
             Log::error('Registration Failed', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTrace(),
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
