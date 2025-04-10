@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\Web\HospitalDetailsApiController;
 use App\Http\Controllers\VerifyHospitalController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -36,8 +38,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+// Route::post('/api/broadcasting/auth', function (Request $request) {
+//    return Broadcast::auth($request);
+// })->middleware(['auth:sanctum']);
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+require __DIR__.'/channels.php';
 
 // admin specific routes
 require __DIR__.'/adminSettings.php';

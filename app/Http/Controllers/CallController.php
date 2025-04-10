@@ -15,7 +15,7 @@ class CallController extends Controller
         $conversation = Conversation::query()->findOrFail($conversationId);
         $user = Auth::user();
 
-        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -23,7 +23,7 @@ class CallController extends Controller
             'conversation_id' => $conversationId,
             'caller_id' => $user->id,
             'caller_name' => $user->name,
-            'type' => $request->type, // 'video' or 'audio'
+            'type' => $request->type,
             'action' => 'call_initiated',
         ];
 
@@ -32,13 +32,12 @@ class CallController extends Controller
         return response()->json(['message' => 'Call initiated']);
     }
 
-    public function acceptCall(Request $request, $conversationId)
+    public function acceptCall(Request $request, $conversationId): JsonResponse
     {
-        $conversation = Conversation::findOrFail($conversationId);
+        $conversation = Conversation::query()->findOrFail($conversationId);
         $user = Auth::user();
 
-        // Verify user is part of the conversation
-        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -59,8 +58,7 @@ class CallController extends Controller
         $conversation = Conversation::query()->findOrFail($conversationId);
         $user = Auth::user();
 
-        // Verify user is part of the conversation
-        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -81,8 +79,7 @@ class CallController extends Controller
         $conversation = Conversation::query()->findOrFail($conversationId);
         $user = Auth::user();
 
-        // Verify user is part of the conversation
-        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 

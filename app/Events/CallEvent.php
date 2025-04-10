@@ -2,36 +2,35 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CallEvent implements ShouldBroadcast
+class CallEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $data;
+    public array $callData;
 
-    /**
-     * Create a new event instance.
-     */
-    public function __construct($data)
+    public function __construct(array $callData)
     {
-        $this->data = $data;
+        $this->callData = $callData;
     }
 
-    /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, Channel>
-     */
-    public function broadcastOn(): array
+    public function broadcastOn(): PrivateChannel
     {
-        return [
-            new PrivateChannel('calls.'.$this->data['conversation_id']),
-        ];
+        return new PrivateChannel('private-calls.'.$this->callData['conversation_id']);
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'CallEvent';
+    }
+
+    public function broadcastWith(): array
+    {
+        return $this->callData;
     }
 }
