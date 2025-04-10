@@ -7,6 +7,7 @@ use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -38,6 +39,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/conversations/{conversationId}/call/end', [CallController::class, 'endCall']);
 
     Route::post('/broadcasting/auth', function (Request $request) {
+        //        Log::alert('Broadcasting auth request received', [
+        //            'headers' => $request->headers->all(),
+        //            'payload' => $request->all(),
+        //        ]);
         return Broadcast::auth($request);
     });
 });

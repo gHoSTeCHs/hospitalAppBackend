@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\File;
 use App\Models\Message;
@@ -12,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use App\Events\MessageSent;
 
 // use Illuminate\Support\Facades\Storage;
 
@@ -68,14 +68,6 @@ class MessageController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create(Request $request, $conversationId)
-    {
-        return $conversationId;
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request, $conversationId): JsonResponse
@@ -115,7 +107,7 @@ class MessageController extends Controller
                 'conversation_id' => $conversationId,
                 'sender_id' => $user->id,
                 'message_type' => $request->message_type,
-                'content' => $request->input('content'), // Ensure it's properly retrieved
+                'content' => $request->input('content'),
                 'is_alert' => $request->is_alert ?? false,
                 'is_emergency' => $request->is_emergency ?? false,
             ]);
@@ -124,7 +116,7 @@ class MessageController extends Controller
 
             $participantIds = $conversation->participants()
                 ->where('users.id', '!=', $user->id)
-                ->pluck('users.id'); // Ensure no alias issue
+                ->pluck('users.id');
 
             foreach ($participantIds as $participantId) {
                 MessageStatus::query()->create([
@@ -134,7 +126,6 @@ class MessageController extends Controller
                 ]);
             }
 
-            // Handle file upload if present
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
                 $path = $file->store('conversation_files', 'public');
@@ -151,7 +142,15 @@ class MessageController extends Controller
             $message->load(['sender', 'files', 'status']);
 
             DB::commit();
+
+            Log::info('Broadcasting to channel', [
+                'channel' => 'private-conversation.'.$message->conversation_id,
+                'event' => 'message-sent',
+                'message_id' => $message->id,
+            ]);
             broadcast(new MessageSent($message))->toOthers();
+            event(new MessageSent($message));
+            MessageSent::dispatch($message);
 
             return response()->json([
                 'message' => $message,
@@ -198,29 +197,4 @@ class MessageController extends Controller
 
         return response()->json(['message' => $message]);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Message $message)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Message $message)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Message $message)
-    {
-        //
-    }
-
 }

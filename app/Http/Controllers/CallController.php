@@ -13,9 +13,9 @@ class CallController extends Controller
     public function initiateCall(Request $request, $conversationId): JsonResponse
     {
         $conversation = Conversation::query()->findOrFail($conversationId);
-        $user = Auth::user();
+        $user = $request->user();
 
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -35,9 +35,9 @@ class CallController extends Controller
     public function acceptCall(Request $request, $conversationId): JsonResponse
     {
         $conversation = Conversation::query()->findOrFail($conversationId);
-        $user = Auth::user();
+        $user = $request->user();
 
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -56,9 +56,9 @@ class CallController extends Controller
     public function rejectCall(Request $request, $conversationId): JsonResponse
     {
         $conversation = Conversation::query()->findOrFail($conversationId);
-        $user = Auth::user();
+        $user = $request->user();
 
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -77,9 +77,9 @@ class CallController extends Controller
     public function endCall(Request $request, $conversationId): JsonResponse
     {
         $conversation = Conversation::query()->findOrFail($conversationId);
-        $user = Auth::user();
+        $user = $request->user();
 
-        if (!$conversation->participants()->where('users.id', $user->id)->exists()) {
+        if (! $conversation->participants()->where('users.id', $user->id)->exists()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
