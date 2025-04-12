@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Laravel\Facades\Image;
 
-
 class MessageController extends Controller
 {
     /**
@@ -133,20 +132,16 @@ class MessageController extends Controller
                 if ($request->message_type === 'image') {
 
                     $image = Image::read($file->getRealPath());
-                    $image->resize(300, null, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    });
+                    $image->resize(300);
 
-                    $thumbnailPath = 'thumbnails/'.basename($path);
-                    Storage::disk('public')->put($thumbnailPath, (string) $image->encode());
-
+                    $thumbnailPath = 'thumbnails/' . basename($path);
+                    Storage::disk('public')->put($thumbnailPath, (string)$image->encode());
 
                     File::query()->create([
                         'message_id' => $message->id,
                         'file_name' => $file->getClientOriginalName(),
-                        'file_path' => Storage::disk('public')->url($path),
-                        'thumbnail_path' => Storage::disk('public')->url($thumbnailPath),
+                        'file_path' => $path,
+                        'thumbnail_path' => $thumbnailPath,
                         'file_type' => $file->getMimeType(),
                         'file_size' => $file->getSize(),
                     ]);
@@ -155,7 +150,7 @@ class MessageController extends Controller
                     File::query()->create([
                         'message_id' => $message->id,
                         'file_name' => $file->getClientOriginalName(),
-                        'file_path' => Storage::disk('public')->url($path),
+                        'file_path' => $path,
                         'file_type' => $file->getMimeType(),
                         'file_size' => $file->getSize(),
                     ]);
@@ -167,7 +162,7 @@ class MessageController extends Controller
             DB::commit();
 
             Log::info('Broadcasting to channel', [
-                'channel' => 'private-conversation.'.$message->conversation_id,
+                'channel' => 'private-conversation.' . $message->conversation_id,
                 'event' => 'message-sent',
                 'message_id' => $message->id,
             ]);
