@@ -12,9 +12,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Intervention\Image\Laravel\Facades\Image;
 
-// use Illuminate\Support\Facades\Storage;
 
 class MessageController extends Controller
 {
@@ -102,7 +103,6 @@ class MessageController extends Controller
         DB::beginTransaction();
 
         try {
-
             $message = Message::query()->create([
                 'conversation_id' => $conversationId,
                 'sender_id' => $user->id,
@@ -130,13 +130,36 @@ class MessageController extends Controller
                 $file = $request->file('file');
                 $path = $file->store('conversation_files', 'public');
 
-                File::query()->create([
-                    'message_id' => $message->id,
-                    'file_name' => $file->getClientOriginalName(),
-                    'file_path' => $path,
-                    'file_type' => $file->getMimeType(),
-                    'file_size' => $file->getSize(),
-                ]);
+                if ($request->message_type === 'image') {
+
+                    $image = Image::read($file->getRealPath());
+                    $image->resize(300, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+
+                    $thumbnailPath = 'thumbnails/'.basename($path);
+                    Storage::disk('public')->put($thumbnailPath, (string) $image->encode());
+
+
+                    File::query()->create([
+                        'message_id' => $message->id,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => Storage::disk('public')->url($path),
+                        'thumbnail_path' => Storage::disk('public')->url($thumbnailPath),
+                        'file_type' => $file->getMimeType(),
+                        'file_size' => $file->getSize(),
+                    ]);
+                } else {
+
+                    File::query()->create([
+                        'message_id' => $message->id,
+                        'file_name' => $file->getClientOriginalName(),
+                        'file_path' => Storage::disk('public')->url($path),
+                        'file_type' => $file->getMimeType(),
+                        'file_size' => $file->getSize(),
+                    ]);
+                }
             }
 
             $message->load(['sender', 'files', 'status']);
@@ -149,8 +172,6 @@ class MessageController extends Controller
                 'message_id' => $message->id,
             ]);
             broadcast(new MessageSent($message))->toOthers();
-            event(new MessageSent($message));
-            MessageSent::dispatch($message);
 
             return response()->json([
                 'message' => $message,

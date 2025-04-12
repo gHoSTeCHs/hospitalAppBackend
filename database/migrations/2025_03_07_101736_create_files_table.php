@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('file_path');
             $table->string('file_type', 100);
             $table->integer('file_size');
+            $table->string('thumbnail_path')->nullable();
             $table->timestamps();
         });
     }
@@ -29,4 +30,8 @@ return new class extends Migration
     {
         Schema::dropIfExists('files');
     }
+
+
+
+
 };
