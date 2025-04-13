@@ -33,5 +33,15 @@ export const VerifyHospitalService = {
             console.error('Error verifying hospital:', error);
             throw error;
         }
-    }
+    },
+
+    revokeVerification: async (hospitalId: number) => {
+        try {
+            const response = await axios.post(`${API_URL}/hospitals/revoke/${hospitalId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error revoking verification:', error);
+            throw error;
+        }
+    },
 };

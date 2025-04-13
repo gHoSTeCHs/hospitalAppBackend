@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // data
         Route::get('/hospitals', [VerifyHospitalController::class, 'index'])->name('hospitals');
         Route::post('/hospitals/verify/{hospitalId}', [VerifyHospitalController::class, 'verify'])->name('hospitals.verify');
+        Route::post('/hospitals/revoke/{hospitalId}', [VerifyHospitalController::class, 'revokeVerification'])->name('hospitals.revoke');
     });
 });
 
@@ -50,9 +51,9 @@ Route::post('/broadcasting/auth', function (Request $request) {
     return Broadcast::auth($request);
 })->middleware(['auth:sanctum']);
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-require __DIR__.'/channels.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
+require __DIR__ . '/channels.php';
 
 // admin specific routes
-require __DIR__.'/adminSettings.php';
+require __DIR__ . '/adminSettings.php';

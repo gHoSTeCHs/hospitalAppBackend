@@ -39,7 +39,7 @@ interface Hospital {
     logo: string | null;
     created_at: string;
     updated_at: string;
-    verified: boolean;
+    verified: number;
     users_count: number;
     documents: Document[];
     users: User[];
@@ -49,15 +49,13 @@ const HospitalApproval = () => {
     const [showDialog, setShowDialog] = useState(false);
     const [selectedHospital, setSelectedHospital] = useState<Hospital>();
     const [hospitalData, setHospitalData] = useState<Hospital[]>([]);
-    const [isVerifying, setIsVerifying] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    const getVerificationStatusBadge = (status: number | boolean) => {
+    const getVerificationStatusBadge = (status: number) => {
         switch (status) {
             case 1:
-            case true:
                 return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Approved</Badge>;
             case 0:
-            case false:
                 return (
                     <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-600">
                         Under Review
@@ -74,7 +72,7 @@ const HospitalApproval = () => {
     };
 
     const verifyHospital = async (hospitalId: number) => {
-        setIsVerifying(true);
+        setIsProcessing(true);
         try {
             const response = await VerifyHospitalService.verifyHospital(hospitalId);
 
@@ -83,14 +81,14 @@ const HospitalApproval = () => {
                     hospital.id === hospitalId
                         ? {
                               ...hospital,
-                              verified: true,
+                              verified: 1,
                           }
                         : hospital,
                 ),
             );
 
             if (selectedHospital && selectedHospital.id === hospitalId) {
-                setSelectedHospital({ ...selectedHospital, verified: true });
+                setSelectedHospital({ ...selectedHospital, verified: 1 });
             }
 
             toast('The hospital has been successfully verified.');
@@ -98,7 +96,36 @@ const HospitalApproval = () => {
             console.error('Failed to verify hospital:', error);
             toast('There was an error verifying the hospital. Please try again.');
         } finally {
-            setIsVerifying(false);
+            setIsProcessing(false);
+        }
+    };
+
+    const revokeVerification = async (hospitalId: number) => {
+        setIsProcessing(true);
+        try {
+            const response = await VerifyHospitalService.revokeVerification(hospitalId);
+
+            setHospitalData((prevData) =>
+                prevData.map((hospital) =>
+                    hospital.id === hospitalId
+                        ? {
+                              ...hospital,
+                              verified: 0,
+                          }
+                        : hospital,
+                ),
+            );
+
+            if (selectedHospital && selectedHospital.id === hospitalId) {
+                setSelectedHospital({ ...selectedHospital, verified: 0 });
+            }
+
+            toast("The hospital's verification has been revoked.");
+        } catch (error) {
+            console.error('Failed to revoke verification:', error);
+            toast("There was an error revoking the hospital's verification. Please try again.");
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -210,7 +237,7 @@ const HospitalApproval = () => {
                                                     </svg>
                                                     View Documents
                                                 </DropdownMenuItem>
-                                                {!hospital.verified && (
+                                                {hospital.verified === 0 ? (
                                                     <DropdownMenuItem onClick={() => verifyHospital(hospital.id)}>
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -227,6 +254,25 @@ const HospitalApproval = () => {
                                                             <path d="M20 6 9 17l-5-5"></path>
                                                         </svg>
                                                         Verify Hospital
+                                                    </DropdownMenuItem>
+                                                ) : (
+                                                    <DropdownMenuItem onClick={() => revokeVerification(hospital.id)}>
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="16"
+                                                            height="16"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            className="mr-2 text-red-500"
+                                                        >
+                                                            <path d="M18 6 6 18"></path>
+                                                            <path d="m6 6 12 12"></path>
+                                                        </svg>
+                                                        Revoke Verification
                                                     </DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>
@@ -317,16 +363,21 @@ const HospitalApproval = () => {
                                 </div>
                             </div>
 
-                            {selectedHospital.verified ? (
-                                <div className="flex items-center">
-                                    <Badge className="mr-2 bg-green-100 text-green-800">Verified</Badge>
-                                    <p>This hospital has been verified</p>
+                            {selectedHospital.verified === 1 ? (
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <Badge className="mr-2 bg-green-100 text-green-800">Verified</Badge>
+                                        <p>This hospital has been verified</p>
+                                    </div>
+                                    <Button variant="destructive" onClick={() => revokeVerification(selectedHospital.id)} disabled={isProcessing}>
+                                        {isProcessing ? 'Processing...' : 'Revoke Verification'}
+                                    </Button>
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-between">
                                     <p>Hospital is not verified</p>
-                                    <Button variant="secondary" onClick={() => verifyHospital(selectedHospital.id)} disabled={isVerifying}>
-                                        {isVerifying ? 'Verifying...' : 'Verify Hospital'}
+                                    <Button variant="secondary" onClick={() => verifyHospital(selectedHospital.id)} disabled={isProcessing}>
+                                        {isProcessing ? 'Verifying...' : 'Verify Hospital'}
                                     </Button>
                                 </div>
                             )}

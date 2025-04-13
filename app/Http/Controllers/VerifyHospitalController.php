@@ -22,7 +22,7 @@ class VerifyHospitalController extends Controller
 
     public function verify(Request $request, int $hospitalId): JsonResponse
     {
-        $hospital = Hospital::findOrFail($hospitalId);
+        $hospital = Hospital::query()->findOrFail($hospitalId);
 
         if (! $hospital->verified) {
             $hospital->verified = true;
@@ -38,6 +38,28 @@ class VerifyHospitalController extends Controller
         return response()->json([
             'success' => false,
             'message' => 'Hospital was already verified',
+            'hospital' => $hospital,
+        ]);
+    }
+
+    public function revokeVerification(Request $request, int $hospitalId): JsonResponse
+    {
+        $hospital = Hospital::query()->findOrFail($hospitalId);
+
+        if ($hospital->verified) {
+            $hospital->verified = 0;
+            $hospital->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hospital verification revoked successfully',
+                'hospital' => $hospital,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Hospital was not verified',
             'hospital' => $hospital,
         ]);
     }
