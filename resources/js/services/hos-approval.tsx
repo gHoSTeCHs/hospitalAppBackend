@@ -24,4 +24,14 @@ export const VerifyHospitalService = {
             console.error('Error getHospitals', e);
         }
     },
+
+    verifyHospital: async (hospitalId: number) => {
+        try {
+            const response = await axios.post(`${API_URL}/hospitals/verify/${hospitalId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error verifying hospital:', error);
+            throw error;
+        }
+    }
 };

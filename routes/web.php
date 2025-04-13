@@ -36,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('dashboard');
         // data
         Route::get('/hospitals', [VerifyHospitalController::class, 'index'])->name('hospitals');
+        Route::post('/hospitals/verify/{hospitalId}', [VerifyHospitalController::class, 'verify'])->name('hospitals.verify');
     });
 });
 

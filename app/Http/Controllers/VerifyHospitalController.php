@@ -16,55 +16,29 @@ class VerifyHospitalController extends Controller
         $hospitals = Hospital::query()->with(['users', 'documents'])->withCount('users')->get();
 
         return response()->json([
-            $hospitals
+            $hospitals,
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function verify(Request $request, int $hospitalId): JsonResponse
     {
-        //
-    }
+        $hospital = Hospital::findOrFail($hospitalId);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        if (! $hospital->verified) {
+            $hospital->verified = true;
+            $hospital->save();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+            return response()->json([
+                'success' => true,
+                'message' => 'Hospital verified successfully',
+                'hospital' => $hospital,
+            ]);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'success' => false,
+            'message' => 'Hospital was already verified',
+            'hospital' => $hospital,
+        ]);
     }
 }

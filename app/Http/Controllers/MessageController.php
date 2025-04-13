@@ -134,8 +134,8 @@ class MessageController extends Controller
                     $image = Image::read($file->getRealPath());
                     $image->resize(300);
 
-                    $thumbnailPath = 'thumbnails/' . basename($path);
-                    Storage::disk('public')->put($thumbnailPath, (string)$image->encode());
+                    $thumbnailPath = 'thumbnails/'.basename($path);
+                    Storage::disk('public')->put($thumbnailPath, (string) $image->encode());
 
                     File::query()->create([
                         'message_id' => $message->id,
@@ -162,7 +162,7 @@ class MessageController extends Controller
             DB::commit();
 
             Log::info('Broadcasting to channel', [
-                'channel' => 'private-conversation.' . $message->conversation_id,
+                'channel' => 'private-conversation.'.$message->conversation_id,
                 'event' => 'message-sent',
                 'message_id' => $message->id,
             ]);

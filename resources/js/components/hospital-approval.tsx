@@ -6,6 +6,7 @@ import { Table, TableCell, TableHead, TableHeader, TableRow } from '@/components
 import { VerifyHospitalService } from '@/services/hos-approval';
 import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from './ui/dropdown-menu';
 
 interface Document {
@@ -48,59 +49,14 @@ const HospitalApproval = () => {
     const [showDialog, setShowDialog] = useState(false);
     const [selectedHospital, setSelectedHospital] = useState<Hospital>();
     const [hospitalData, setHospitalData] = useState<Hospital[]>([]);
+    const [isVerifying, setIsVerifying] = useState(false);
 
-    const getStatusBadge = (status: string) => {
+    const getVerificationStatusBadge = (status: number | boolean) => {
         switch (status) {
-            case 'active':
-                return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>;
-            case 'pending':
-                return (
-                    <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-600">
-                        Pending
-                    </Badge>
-                );
-            case 'inactive':
-                return (
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-                        Inactive
-                    </Badge>
-                );
-            default:
-                return <Badge variant="outline">{status}</Badge>;
-        }
-    };
-
-    const getDocumentStatusBadge = (status: string) => {
-        switch (status) {
-            case 'approved':
-                return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Approved</Badge>;
-            case 'pending':
-                return (
-                    <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-600">
-                        Under Review
-                    </Badge>
-                );
-            case 'rejected':
-                return (
-                    <Badge variant="destructive" className="bg-red-100 text-red-800 hover:bg-red-100">
-                        Rejected
-                    </Badge>
-                );
-            case 'missing':
-                return (
-                    <Badge variant="outline" className="border-gray-300 bg-gray-50 text-gray-600">
-                        Not Uploaded
-                    </Badge>
-                );
-            default:
-                return <Badge variant="outline">{status}</Badge>;
-        }
-    };
-
-    const getVerificationStatusBadge = (status: boolean) => {
-        switch (status) {
+            case 1:
             case true:
                 return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Approved</Badge>;
+            case 0:
             case false:
                 return (
                     <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-600">
@@ -108,13 +64,42 @@ const HospitalApproval = () => {
                     </Badge>
                 );
             default:
-                return <Badge variant="outline">{status}</Badge>;
+                return <Badge variant="outline">{String(status)}</Badge>;
         }
     };
 
     const viewDocuments = (hospital: Hospital) => {
         setSelectedHospital(hospital);
         setShowDialog(true);
+    };
+
+    const verifyHospital = async (hospitalId: number) => {
+        setIsVerifying(true);
+        try {
+            const response = await VerifyHospitalService.verifyHospital(hospitalId);
+
+            setHospitalData((prevData) =>
+                prevData.map((hospital) =>
+                    hospital.id === hospitalId
+                        ? {
+                              ...hospital,
+                              verified: true,
+                          }
+                        : hospital,
+                ),
+            );
+
+            if (selectedHospital && selectedHospital.id === hospitalId) {
+                setSelectedHospital({ ...selectedHospital, verified: true });
+            }
+
+            toast('The hospital has been successfully verified.');
+        } catch (error) {
+            console.error('Failed to verify hospital:', error);
+            toast('There was an error verifying the hospital. Please try again.');
+        } finally {
+            setIsVerifying(false);
+        }
     };
 
     useEffect(() => {
@@ -225,6 +210,25 @@ const HospitalApproval = () => {
                                                     </svg>
                                                     View Documents
                                                 </DropdownMenuItem>
+                                                {!hospital.verified && (
+                                                    <DropdownMenuItem onClick={() => verifyHospital(hospital.id)}>
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="16"
+                                                            height="16"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            className="mr-2"
+                                                        >
+                                                            <path d="M20 6 9 17l-5-5"></path>
+                                                        </svg>
+                                                        Verify Hospital
+                                                    </DropdownMenuItem>
+                                                )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -266,14 +270,6 @@ const HospitalApproval = () => {
                                         <p className="text-sm font-medium text-gray-500">Location</p>
                                         {selectedHospital.address == null ? <p>No address provided</p> : <p>{selectedHospital.address}</p>}
                                     </div>
-                                    {/*<div className="space-y-1">*/}
-                                    {/*    <p className="text-sm font-medium text-gray-500">Join Date</p>*/}
-                                    {/*    <p>{selectedHospital.joinDate}</p>*/}
-                                    {/*</div>*/}
-                                    {/*<div className="space-y-1">*/}
-                                    {/*    <p className="text-sm font-medium text-gray-500">Document Status</p>*/}
-                                    {/*    <p>{getDocumentStatusBadge(selectedHospital.documentsStatus)}</p>*/}
-                                    {/*</div>*/}
                                 </div>
                                 <div className="space-y-4 rounded-md border p-4">
                                     {selectedHospital.documents.map((document, id: number) => {
@@ -297,16 +293,18 @@ const HospitalApproval = () => {
                                                 </div>
                                                 <div>
                                                     {document?.document_type === 'pending' && document?.path ? (
-                                                        <div className='flex gap-1'>
+                                                        <div className="flex gap-1">
                                                             <Button size="sm" className="text-xs">
                                                                 Approve
                                                             </Button>
-                                                            <Button variant='destructive' size="sm" className="text-xs">
+                                                            <Button variant="destructive" size="sm" className="text-xs">
                                                                 Reject
                                                             </Button>
                                                         </div>
                                                     ) : document?.document_type === 'rejected' ? (
-                                                        <Button variant="destructive" disabled={true}>Rejected</Button>
+                                                        <Button variant="destructive" disabled={true}>
+                                                            Rejected
+                                                        </Button>
                                                     ) : document?.document_type === 'approved' ? (
                                                         <p className="text-xs">Approved</p>
                                                     ) : (
@@ -319,7 +317,19 @@ const HospitalApproval = () => {
                                 </div>
                             </div>
 
-                            {selectedHospital.verified ? <>Hospital is verified</> : <>Hospital is not verified</>}
+                            {selectedHospital.verified ? (
+                                <div className="flex items-center">
+                                    <Badge className="mr-2 bg-green-100 text-green-800">Verified</Badge>
+                                    <p>This hospital has been verified</p>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between">
+                                    <p>Hospital is not verified</p>
+                                    <Button variant="secondary" onClick={() => verifyHospital(selectedHospital.id)} disabled={isVerifying}>
+                                        {isVerifying ? 'Verifying...' : 'Verify Hospital'}
+                                    </Button>
+                                </div>
+                            )}
                         </>
                     )}
                 </DialogContent>
