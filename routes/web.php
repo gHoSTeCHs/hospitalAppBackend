@@ -51,9 +51,9 @@ Route::post('/broadcasting/auth', function (Request $request) {
     return Broadcast::auth($request);
 })->middleware(['auth:sanctum']);
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
-require __DIR__ . '/channels.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
+require __DIR__.'/channels.php';
 
 // admin specific routes
-require __DIR__ . '/adminSettings.php';
+require __DIR__.'/adminSettings.php';

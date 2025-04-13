@@ -1,3 +1,4 @@
+import CopyInput from '@/components/copy-input';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -89,6 +90,12 @@ const UpdateHospitalDetails = () => {
     return (
         <div className="space-y-6">
             <HeadingSmall title="Hospital information" description="Hospital information and documents" />
+
+            <div className='space-y-3'>
+                <h3 className='font-semibold text-lg text-gray-600'>Hospital Code</h3>
+                {hospitalData && <CopyInput value={hospitalData.hospital_code} />}
+            </div>
+
 
             <form className="space-y-6" onSubmit={onSubmit}>
                 <div className="grid gap-2">
