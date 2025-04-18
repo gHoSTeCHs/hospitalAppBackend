@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\SteamToken;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\CallController;
 use App\Http\Controllers\ConversationController;
@@ -45,4 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
         //        ]);
         return Broadcast::auth($request);
     });
+
+    // SteamToken
+    Route::post('/token', [SteamToken::class, 'generateToken']);
 });

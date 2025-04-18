@@ -110,7 +110,18 @@ Broadcast::channel('presence-conversation.{conversation_id}', function ($user, $
     return false;
 });
 
+Broadcast::channel('private-user-status', function ($user) {
+    Log::info('Private user status channel authorization attempt', [
+        'channel' => 'private-user-status',
+        'user_id' => $user->id,
+    ]);
 
+    Log::info('Private user status authorization successful', [
+        'user_id' => $user->id,
+    ]);
+
+    return true;
+});
 
 /**
  * Broadcast::channel('private-calls.{conversation_id}', function ($user, $conversationId) {
