@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+    return (int)$user->id === (int)$id;
 });
 
 Broadcast::channel('user.{userId}', function ($user, $userId) {
@@ -110,7 +110,7 @@ Broadcast::channel('presence-conversation.{conversation_id}', function ($user, $
     return false;
 });
 
-Broadcast::channel('private-user-status', function ($user) {
+Broadcast::channel('private-user-status.{user.id}', function ($user) {
     Log::info('Private user status channel authorization attempt', [
         'channel' => 'private-user-status',
         'user_id' => $user->id,

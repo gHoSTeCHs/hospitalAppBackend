@@ -30,21 +30,25 @@ class UserStatusChanged implements ShouldBroadcastNow
 
     /**
      * Get the channels the event should broadcast on.
-     *
-     * @return Channel|PrivateChannel
      */
     public function broadcastOn(): Channel|PrivateChannel
     {
-        return new PrivateChannel('user-status');
+        return new PrivateChannel('user-status' . $this->user_id);
     }
 
     /**
      * The event's broadcast name.
-     *
-     * @return string
      */
     public function broadcastAs(): string
     {
         return 'user-status-changed';
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'user_id' => $this->user_id,
+            'is_online' => $this->is_online
+        ];
     }
 }

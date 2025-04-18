@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('hospital_id')->nullable();
             $table->string('profile_picture')->nullable();
             $table->boolean('is_online')->default(false);
+            $table->string('stream_token')->nullable();
             $table->timestamp('last_active')->nullable();
             $table->string('device_token')->nullable();
             $table->rememberToken();

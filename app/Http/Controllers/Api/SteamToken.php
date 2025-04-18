@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use GetStream\StreamChat\Client as StreamClient;
 use GetStream\StreamChat\StreamException;
 use Illuminate\Http\JsonResponse;
@@ -25,13 +26,28 @@ class SteamToken extends Controller
         }
     }
 
-    /**
-     * @throws StreamException
-     */
     public function generateToken(Request $request): JsonResponse
     {
-        return response()->json([
-            'token' => $this->client->createToken($request->input('username')),
-        ], 200);
+        $userId = $request->input('userId');
+        $user = User::query()->where('id', $userId)->first();
+        try {
+            $upsert = $this->client->upsertUser(
+                [
+                    'id' => strval($user->id),
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ]
+            );
+            return response()->json([
+                'token' => $this->client->createToken(strval($user->id)),
+            ], 200);
+        } catch (StreamException $e) {
+            Log::error($e->getMessage());
+
+            return response()->json([
+                'error' => 'Failed to generate token',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }

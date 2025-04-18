@@ -7,6 +7,8 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Hospital;
 use App\Models\User;
 use Exception;
+use GetStream\StreamChat\Client as StreamClient;
+use GetStream\StreamChat\StreamException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +19,20 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
+    protected StreamClient $client;
+
+    public function __construct()
+    {
+        try {
+            $this->client = new StreamClient(
+                getenv('STREAM_API_KEY'),
+                getenv('STREAM_API_SECRET')
+            );
+        } catch (StreamException $e) {
+            Log::error($e->getMessage());
+        }
+    }
+
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
@@ -26,7 +42,7 @@ class AuthController extends Controller
                 ->where('verified', true)
                 ->first();
 
-            if (! $hospital) {
+            if (!$hospital) {
                 Log::warning('Registration attempt with invalid/unverified hospital code', [
                     'hospital_code' => $validatedData['hospital_code'],
                 ]);
@@ -49,6 +65,18 @@ class AuthController extends Controller
                 $tokenResult = $user->createToken('auth_token');
                 $token = $tokenResult->plainTextToken;
 
+                // getStream.io
+                $this->client->upsertUser(
+                    [
+                        'id' => strval($user->id),
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ]
+                );
+                $userToken = $this->client->createToken($user->id);
+                $user->stream_token = $userToken;
+                $user->save();
+
                 // event(new Registered($user));
 
                 Log::info('User registered successfully', ['user_id' => $user->id]);
@@ -58,6 +86,7 @@ class AuthController extends Controller
                     'token' => $token,
                     'hospital' => $hospital->only(['id', 'name']),
                     'message' => 'Registration successful',
+                    'stream_token' => $user->stream_token,
                 ], Response::HTTP_CREATED);
             });
         } catch (Exception $e) {
@@ -79,7 +108,7 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (! Auth::attempt($request->only('email', 'password'))) {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Invalid login credentials',
             ], 401);
@@ -87,6 +116,17 @@ class AuthController extends Controller
 
         $user = User::query()->where('email', $request->email)->firstOrFail();
         $token = $user->createToken('auth_token')->plainTextToken;
+        try {
+            $this->client->upsertUser(
+                [
+                    'id' => strval($user->id),
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ]
+            );
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+        }
 
         return response()->json([
             'user' => $user,
