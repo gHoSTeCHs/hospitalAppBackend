@@ -123,6 +123,10 @@ Broadcast::channel('private-user-status.{user.id}', function ($user) {
     return true;
 });
 
+Broadcast::channel('private-user-conversations.{userId}', function ($user, $userId) {
+    return (int)$user->id === (int)$userId;
+});
+
 /**
  * Broadcast::channel('private-calls.{conversation_id}', function ($user, $conversationId) {
  * Log::info('Private calls channel authorization attempt', [

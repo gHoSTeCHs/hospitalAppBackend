@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property mixed $conversation_id
+ * @property mixed $conversation
  */
 class Message extends Model
 {

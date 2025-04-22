@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property mixed $participants
+ * @property mixed $id
+ */
 class Conversation extends Model
 {
     /** @use HasFactory<ConversationFactory> */
@@ -21,6 +25,9 @@ class Conversation extends Model
         'hospital_id',
         'created_by',
     ];
+
+    protected $with = ['lastMessage'];
+    protected $appends = ['unread_count'];
 
     public function participants(): BelongsToMany
     {
@@ -46,5 +53,10 @@ class Conversation extends Model
     public function lastMessage(): HasOne
     {
         return $this->hasOne(Message::class)->latest();
+    }
+
+    public function getUnreadCountAttribute()
+    {
+        return $this->attributes['unread_count'] ?? 0;
     }
 }

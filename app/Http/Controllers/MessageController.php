@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\File;
 use App\Models\Message;
 use App\Models\MessageStatus;
+use App\Services\ConversationEventService;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -166,7 +166,9 @@ class MessageController extends Controller
                 'event' => 'message-sent',
                 'message_id' => $message->id,
             ]);
-            broadcast(new MessageSent($message))->toOthers();
+            // broadcast(new MessageSent($message))->toOthers();
+            $conversationEventService = new ConversationEventService;
+            $conversationEventService->broadcastNewMessage($message);
 
             return response()->json([
                 'message' => $message,
