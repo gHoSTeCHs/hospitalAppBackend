@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int)$user->id === (int)$id;
+    return (int) $user->id === (int) $id;
 });
 
 Broadcast::channel('user.{userId}', function ($user, $userId) {
@@ -124,7 +124,7 @@ Broadcast::channel('private-user-status.{user.id}', function ($user) {
 });
 
 Broadcast::channel('private-user-conversations.{userId}', function ($user, $userId) {
-    return (int)$user->id === (int)$userId;
+    return (int) $user->id === (int) $userId;
 });
 
 /**

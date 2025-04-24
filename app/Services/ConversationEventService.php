@@ -6,6 +6,7 @@ use App\Events\ConversationUpdated;
 use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\Message;
+use Illuminate\Support\Facades\Log;
 
 class ConversationEventService
 {
@@ -20,12 +21,13 @@ class ConversationEventService
 
             $conversationForUser = $this->getConversationForUser($conversation, $participant->id);
             broadcast(new ConversationUpdated($conversationForUser))->toOthers();
+
+
         }
     }
 
     private function getConversationForUser(Conversation $conversation, $userId)
     {
-
         return Conversation::with(['lastMessage', 'participants' => function ($query) use ($userId) {
             $query->where('users.id', '!=', $userId);
         }])
