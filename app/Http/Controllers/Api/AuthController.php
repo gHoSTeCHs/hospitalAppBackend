@@ -42,7 +42,7 @@ class AuthController extends Controller
                 ->where('verified', true)
                 ->first();
 
-            if (!$hospital) {
+            if (! $hospital) {
                 Log::warning('Registration attempt with invalid/unverified hospital code', [
                     'hospital_code' => $validatedData['hospital_code'],
                 ]);
@@ -108,7 +108,7 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'message' => 'Invalid login credentials',
             ], 401);

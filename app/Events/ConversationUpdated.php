@@ -27,7 +27,7 @@ class ConversationUpdated implements ShouldBroadcastNow
 
         $channels = [];
         foreach ($this->conversation->participants as $participant) {
-            $channels[] = new PrivateChannel('user-conversations.' . $participant->id);
+            $channels[] = new PrivateChannel('user-conversations.'.$participant->id);
         }
 
         return $channels;

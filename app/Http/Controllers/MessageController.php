@@ -88,6 +88,8 @@ class MessageController extends Controller
             'file' => 'nullable|required_if:message_type,image,audio,video,file|file|max:100000',
         ]);
 
+
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
@@ -134,7 +136,7 @@ class MessageController extends Controller
                     $image = Image::read($file->getRealPath());
                     $image->resize(300);
 
-                    $thumbnailPath = 'thumbnails/'.basename($path);
+                    $thumbnailPath = 'thumbnails/' . basename($path);
                     Storage::disk('public')->put($thumbnailPath, (string) $image->encode());
 
                     File::query()->create([
@@ -162,7 +164,7 @@ class MessageController extends Controller
             DB::commit();
 
             Log::info('Broadcasting to channel', [
-                'channel' => 'private-conversation.'.$message->conversation_id,
+                'channel' => 'private-conversation.' . $message->conversation_id,
                 'event' => 'message-sent',
                 'message_id' => $message->id,
             ]);
